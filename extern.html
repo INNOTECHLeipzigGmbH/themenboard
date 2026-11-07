@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Themenboard RBL – Ihre Übersicht</title>
+<style>
+:root{--bg:#f4f6f8;--surface:#fff;--ink:#16202a;--muted:#5f6d7a;--line:#dde3e9;--brand:#0BA1E2;--brand-d:#0886BD;--brand-soft:#e6f5fc;--red:#c62828;--red-soft:#fdecea;--amber:#b45309;--amber-soft:#fff4e0;--green:#1b7f4b;--green-soft:#e6f4ec}
+@media (prefers-color-scheme:dark){:root{--bg:#10161c;--surface:#18212a;--ink:#e8eef3;--muted:#9aa8b5;--line:#2a3643;--brand:#3cb8ec;--brand-d:#7ccdf3;--brand-soft:#133040;--red:#f28b82;--red-soft:#3f1f1d;--amber:#f0b35c;--amber-soft:#3a2c13;--green:#7fcf9f;--green-soft:#1a3326}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:820px;margin:0 auto;padding:16px}
+.hd{background:#16202a;color:#fff;border-radius:14px 14px 0 0;padding:16px 18px}
+.hd b{font-size:17px}.hd small{display:block;opacity:.78;font-size:13px;margin-top:2px}
+.bd{background:var(--bg);border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;padding:6px 16px 16px}
+.g{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin:18px 0 8px;color:var(--muted)}
+.g.late{color:var(--red)}
+.ec{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;padding:13px 15px;margin-bottom:10px}
+.ec.late{border-left-color:var(--red)}.ec.info{border-left-color:var(--line)}
+.ec .t{font-weight:700;font-size:15.5px}
+.ec .meta{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}
+.chip{display:inline-flex;font-size:11.5px;font-weight:700;border-radius:99px;padding:1px 9px;border:1px solid var(--line);color:var(--muted)}
+.chip.red{color:var(--red);background:var(--red-soft);border-color:transparent}
+.chip.green{color:var(--green);background:var(--green-soft);border-color:transparent}
+.chip.amber{color:var(--amber);background:var(--amber-soft);border-color:transparent}
+.ask{margin:8px 0;font-size:14.5px}
+.ask .due{display:block;font-size:13px;color:var(--muted)}.ask .due.l{color:var(--red);font-weight:700}
+details{font-size:13.5px;color:var(--muted);margin:6px 0}
+details summary{cursor:pointer;color:var(--brand-d);font-weight:600}
+details p{margin:6px 0;color:var(--ink)}
+details table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+details td,details th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;color:var(--ink)}
+details th{font-size:11px;text-transform:uppercase;color:var(--muted)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 13px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--brand)}.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn[disabled]{opacity:.55;cursor:default}
+.form{display:none;margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;gap:8px;flex-wrap:wrap;align-items:center}
+.form.on{display:flex}
+.form input,.form textarea{font:inherit;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--surface);color:var(--ink);flex:1;min-width:180px}
+.form textarea{min-height:64px;width:100%}
+.mine{margin-top:10px;font-size:13px;background:var(--brand-soft);border-radius:8px;padding:7px 10px}
+.mine.done{background:var(--green-soft)}
+.msg{text-align:center;padding:40px 16px;color:var(--muted)}
+.msg b{display:block;color:var(--ink);font-size:17px;margin-bottom:6px}
+.foot{font-size:12px;color:var(--muted);margin-top:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#16202a;color:#fff;padding:11px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;max-width:92vw;z-index:9}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd"><b>INNOTECH · Themenboard RBL</b><small id="sub">Wird geladen …</small></div>
+  <div class="bd" id="bd"><div class="msg">Einen Moment bitte …</div></div>
+  <p class="foot">Rückmeldungen gehen direkt an INNOTECH und erscheinen im Themenboard. Sie sehen nur Themen, die für Sie freigegeben sind.</p>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+const SB = "https://beszfzvxtfwdzimixdbo.supabase.co";
+const KEY = "sb_publishable_onY7q5GNCGOxkEuzEOySDA_XyIqR6Rw";
+const PH = { idee: "Idee", skizze: "Skizze", beauftragt: "Beauftragt", umsetzung: "Umsetzung", betrieb: "Betrieb" };
+const STAND = { idee: "Idee", offen: "offen", laeuft: "läuft", erledigt: "erledigt" };
+const ART = { erledigt: "Erledigt gemeldet", rueckfrage: "Rückfrage gestellt", termin: "Neuer Termin vorgeschlagen" };
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const TODAY = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; })();
+const pd = s => { const m = String(s || "").match(/^(\d{4})-(\d\d)-(\d\d)/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+const fmt = s => { const d = pd(s); return d ? String(d.getDate()).padStart(2, "0") + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + d.getFullYear() : ""; };
+const token = (() => { const m = (location.hash || "").match(/[#&]t=([A-Za-z0-9_-]{6,200})/i) || (location.search || "").match(/[?&]t=([A-Za-z0-9_-]{6,200})/i); return m ? m[1] : ""; })();
+let DATA = null;
+function toast(m, err) { const t = $("#toast"); t.textContent = m; t.style.background = err ? "#b3261e" : ""; t.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 4500); }
+async function rpc(name, body) {
+  const r = await fetch(SB + "/rest/v1/rpc/" + name, { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const t = await r.text(); let j = null; try { j = t ? JSON.parse(t) : null; } catch (e) { }
+  if (!r.ok) { const e = new Error((j && j.message) || ("HTTP " + r.status)); e.status = r.status; throw e; }
+  return j;
+}
+async function load() {
+  if (!token) return fail("Link unvollständig", "Bitte öffnen Sie den persönlichen Link, den Sie von INNOTECH erhalten haben.");
+  try { DATA = await rpc("thema_ext_laden", { p_token: token }); render(); }
+  catch (e) { if (/unauthorized/i.test(e.message)) fail("Dieser Link ist ungültig oder wurde gesperrt", "Bitte wenden Sie sich an INNOTECH für einen neuen Link."); else fail("Das hat gerade nicht geklappt", "Bitte laden Sie die Seite in einem Moment neu."); }
+}
+function fail(h, t) { $("#sub").textContent = "Persönliche Übersicht"; $("#bd").innerHTML = `<div class="msg"><b>${esc(h)}</b>${esc(t)}</div>`; }
+function card(t) {
+  const d = pd(t.naechster_termin), late = t.mein_schritt && d && d < TODAY;
+  const cls = t.mein_schritt ? (late ? "late" : "") : "info";
+  const aps = (t.aps || []).length ? `<table><tr><th>Nr.</th><th>Inhalt</th><th>Wer</th><th>Stand</th></tr>${t.aps.map(a => `<tr><td>${esc(a.nr || "")}</td><td>${esc(a.inhalt)}</td><td>${esc(a.wer || "")}</td><td>${esc(STAND[a.stand] || a.stand)}</td></tr>`).join("")}</table>` : "";
+  const bet = (t.beteiligte || []).map(b => esc(b.name) + (b.firma ? " (" + esc(b.firma) + ")" : "")).join(", ");
+  const det = `<details><summary>Worum geht es?</summary>${t.worum ? `<p>${esc(t.worum)}</p>` : ""}${t.ziel ? `<p><b>Ziel:</b> ${esc(t.ziel)}</p>` : ""}${t.kuemmerer ? `<p><b>Kümmerer:</b> ${esc(t.kuemmerer)}${t.kuemmerer_firma ? " (" + esc(t.kuemmerer_firma) + ")" : ""}</p>` : ""}${bet ? `<p><b>Beteiligt:</b> ${bet}</p>` : ""}${aps}</details>`;
+  const ask = t.naechster_schritt ? `<div class="ask"><b>${t.mein_schritt ? "Von Ihnen erwartet:" : "Aktueller Schritt:"}</b> ${esc(t.naechster_schritt)}<span class="due ${late ? "l" : ""}">${d ? (late ? "überfällig seit " : "bis ") + fmt(t.naechster_termin) : "ohne Termin"}${!t.mein_schritt && t.naechster_wer ? " · " + esc(t.naechster_wer) : ""}</span></div>` : `<div class="ask" style="color:var(--muted)">Zurzeit ist kein Schritt offen.</div>`;
+  const mine = (t.meine_rueckmeldungen || []).slice(0, 2).map(m => `<div class="mine ${m.bearbeitet ? "done" : ""}">${esc(ART[m.art] || m.art)} am ${fmt(m.am)}${m.neuer_termin ? " (" + fmt(m.neuer_termin) + ")" : ""}${m.text ? ": „" + esc(m.text) + "“" : ""} · ${m.bearbeitet ? "von INNOTECH geprüft" : "wartet auf Prüfung"}</div>`).join("");
+  const acts = `<div class="acts">${t.mein_schritt && t.naechster_schritt ? `<button class="btn pri" data-f="erledigt">✓ Erledigt melden</button>` : ""}<button class="btn" data-f="rueckfrage">💬 Rückfrage</button>${t.mein_schritt && t.naechster_schritt ? `<button class="btn" data-f="termin">📅 Neuen Termin vorschlagen</button>` : ""}</div>
+    <div class="form" data-form="erledigt"><textarea placeholder="Optional: kurze Anmerkung"></textarea><button class="btn pri" data-send="erledigt">Als erledigt melden</button></div>
+    <div class="form" data-form="rueckfrage"><textarea placeholder="Ihre Frage oder Anmerkung"></textarea><button class="btn pri" data-send="rueckfrage">Senden</button></div>
+    <div class="form" data-form="termin"><input type="date" min="${new Date().toISOString().slice(0, 10)}"><input placeholder="Optional: Grund" style="min-width:200px"><button class="btn pri" data-send="termin">Vorschlag senden</button></div>`;
+  return `<div class="ec ${cls}" data-id="${esc(t.id)}"><div class="t">${esc(t.titel)}</div><div class="meta"><span class="chip">${esc(t.handlungsfeld)}</span>${(t.liegenschaften || []).map(l => `<span class="chip">${esc(l)}</span>`).join("")}<span class="chip">${esc(PH[t.phase] || t.phase)}</span></div>${ask}${det}${mine}${acts}</div>`;
+}
+function render() {
+  const p = DATA.person; $("#sub").textContent = "Persönliche Übersicht für " + p.name + (p.firma ? " (" + p.firma + ")" : "") + " · Stand " + fmt(new Date().toISOString());
+  const th = DATA.themen || [];
+  const late = th.filter(t => t.mein_schritt && t.naechster_schritt && pd(t.naechster_termin) && pd(t.naechster_termin) < TODAY);
+  const mine = th.filter(t => t.mein_schritt && !late.includes(t));
+  const info = th.filter(t => !t.mein_schritt);
+  const grp = (h, cls, l) => l.length ? `<div class="g ${cls}">${h} · ${l.length}</div>${l.map(card).join("")}` : "";
+  const html = grp("Überfällig", "late", late) + grp("Von Ihnen erwartet", "", mine) + grp("Zur Information", "", info);
+  $("#bd").innerHTML = html || `<div class="msg"><b>Aktuell ist nichts für Sie offen.</b>Vielen Dank.</div>`;
+}
+document.addEventListener("click", async e => {
+  const f = e.target.closest("[data-f]"), s = e.target.closest("[data-send]");
+  if (f) { const c = f.closest(".ec"); const form = c.querySelector(`[data-form="${f.dataset.f}"]`); const was = form.classList.contains("on"); c.querySelectorAll(".form").forEach(x => x.classList.remove("on")); if (!was) { form.classList.add("on"); const i = form.querySelector("textarea,input"); if (i) i.focus(); } return; }
+  if (s) {
+    const c = s.closest(".ec"), art = s.dataset.send, form = s.closest(".form"); let text = null, termin = null;
+    if (art === "termin") { termin = form.querySelector("input[type=date]").value; text = form.querySelector("input:not([type=date])").value.trim() || null; if (!termin) return toast("Bitte ein Datum wählen.", true); }
+    else { text = form.querySelector("textarea").value.trim() || null; if (art === "rueckfrage" && !text) return toast("Bitte Ihre Frage eingeben.", true); }
+    s.disabled = true;
+    try { await rpc("thema_ext_melden", { p_token: token, p_thema: c.dataset.id, p_art: art, p_text: text, p_termin: termin }); toast("Danke, Ihre Rückmeldung wurde an INNOTECH gesendet."); await load(); }
+    catch (er) { s.disabled = false; toast(/zu viele/i.test(er.message) ? "Für heute sind zu viele Rückmeldungen eingegangen. Bitte versuchen Sie es morgen erneut." : "Senden hat nicht geklappt. Bitte versuchen Sie es erneut.", true); }
+  }
+});
+load();
+</script>
+</body>
+</html>
