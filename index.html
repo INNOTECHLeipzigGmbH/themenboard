@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Themenboard RBL / INFRA</title>
+<style>
+:root{
+  --bg:#f4f6f8;--surface:#fff;--ink:#16202a;--muted:#5f6d7a;--line:#dde3e9;
+  --brand:#0BA1E2;--brand-d:#0886BD;--brand-soft:#e6f5fc;
+  --red:#c62828;--red-soft:#fdecea;--amber:#b45309;--amber-soft:#fff4e0;--green:#1b7f4b;--green-soft:#e6f4ec;--violet:#6b4fd3;--violet-soft:#efeafc;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#10161c;--surface:#18212a;--ink:#e8eef3;--muted:#9aa8b5;--line:#2a3643;--brand:#3cb8ec;--brand-d:#7ccdf3;--brand-soft:#133040;--red:#f28b82;--red-soft:#3f1f1d;--amber:#f0b35c;--amber-soft:#3a2c13;--green:#7fcf9f;--green-soft:#1a3326;--violet:#b3a1f5;--violet-soft:#2a2347}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.top{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.top h1{font-size:16px;margin:0}
+.badge{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--brand-soft);color:var(--brand-d);padding:3px 9px;border-radius:99px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;padding:10px 20px 0;max-width:1300px;margin:0 auto}
+.tabs button{border:1px solid var(--line);border-bottom:0;background:transparent;color:var(--muted);padding:9px 14px;font:inherit;font-size:13px;font-weight:600;border-radius:9px 9px 0 0;cursor:pointer}
+.tabs button.on{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.wrap{max-width:1300px;margin:0 auto;padding:0 20px 50px}
+.panel{display:none;background:var(--surface);border:1px solid var(--line);border-radius:0 12px 12px 12px;padding:18px}
+.panel.on{display:block}
+h2{font-size:15px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 11px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--brand)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.sm{padding:3px 8px;font-size:11.5px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:99px;padding:1px 8px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.red{color:var(--red);background:var(--red-soft);border-color:transparent}
+.chip.amber{color:var(--amber);background:var(--amber-soft);border-color:transparent}
+.chip.green{color:var(--green);background:var(--green-soft);border-color:transparent}
+.chip.brand{color:var(--brand-d);background:var(--brand-soft);border-color:transparent}
+.chip.violet{color:var(--violet);background:var(--violet-soft);border-color:transparent}
+.av{display:inline-flex;width:24px;height:24px;border-radius:50%;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex:none}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16202a;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:90vw}
+.toast.on{opacity:1}
+
+/* Aufbau */
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.lvl{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg);position:relative}
+.lvl b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-d);margin-bottom:4px}
+.lvl h3{margin:0 0 4px;font-size:14px}
+.lvl p{margin:0;font-size:12.5px;color:var(--muted)}
+.lvl:not(:last-child)::after{content:"→";position:absolute;right:-10px;top:50%;transform:translateY(-50%);background:var(--surface);border:1px solid var(--line);border-radius:50%;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;z-index:2}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h3{margin:0 0 6px;font-size:13px}
+.card ul{margin:0;padding-left:18px;font-size:12.5px;color:var(--muted)}
+.card li{margin-bottom:3px}
+.rule{border-left:4px solid var(--brand);background:var(--brand-soft);padding:9px 12px;border-radius:0 8px 8px 0;font-size:12.5px;margin:12px 0}
+
+/* Landkarte */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;background:var(--surface);text-align:left;font:inherit;color:inherit}
+.kpi:hover,.kpi.on{border-color:var(--brand)}
+.kpi b{display:block;font-size:22px;line-height:1.1}
+.kpi span{font-size:11.5px;color:var(--muted)}
+.kpi.warn b{color:var(--red)}.kpi.amb b{color:var(--amber)}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.filters .chip{cursor:pointer;background:var(--surface)}
+.filters .chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.feld{margin-bottom:14px}
+.feld-h{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 6px;display:flex;gap:8px;align-items:center}
+.feld-h i{flex:1;height:1px;background:var(--line)}
+.trow{display:grid;grid-template-columns:30px minmax(0,2.2fr) 150px minmax(0,2fr) 110px;gap:10px;align-items:center;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:10px;padding:8px 10px;margin-bottom:6px;cursor:pointer;background:var(--surface)}
+.trow:hover{border-color:var(--brand)}
+.trow.late{border-left-color:var(--red)}
+.trow.stale{border-left-color:var(--amber)}
+.prio{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff}
+.prio.A{background:var(--red)}.prio.B{background:var(--amber)}.prio.C{background:#7a8794}
+.tt{font-weight:700;font-size:13.5px}
+.tm{font-size:11.5px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.who{display:flex;align-items:center;gap:6px;font-size:12.5px}
+.who.none{color:var(--red);font-weight:700}
+.nx{font-size:12.5px}
+.nx small{display:block;color:var(--muted);font-size:11px}
+.nx .d.l{color:var(--red);font-weight:700}
+.phase{display:flex;gap:2px}
+.phase i{width:16px;height:6px;border-radius:2px;background:var(--line)}
+.phase i.f{background:var(--brand)}
+
+/* Akte */
+.akte{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px}
+.akte h2.big{font-size:19px;margin-bottom:6px}
+.blk{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.blk h3{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.steps{display:flex;gap:4px;flex-wrap:wrap}
+.steps span{flex:1;min-width:90px;text-align:center;font-size:12px;font-weight:600;border:1px solid var(--line);border-radius:8px;padding:6px 4px;color:var(--muted)}
+.steps span.f{background:var(--brand-soft);color:var(--brand-d);border-color:transparent}
+.steps span.now{background:var(--brand);color:#fff;border-color:var(--brand)}
+.next{border:2px solid var(--brand);border-radius:12px;padding:12px 14px;margin-bottom:12px;background:var(--brand-soft)}
+.next.late{border-color:var(--red);background:var(--red-soft)}
+.next .l{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-d)}
+.next.late .l{color:var(--red)}
+.next .tx{font-size:15px;font-weight:700;margin:3px 0}
+table.ap{width:100%;border-collapse:collapse;font-size:12.5px}
+table.ap th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+table.ap td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:14px}
+.tl div{position:relative;margin-bottom:10px;font-size:12.5px}
+.tl div::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--brand);border:2px solid var(--surface)}
+.tl div.info::before{background:var(--muted)}
+.tl small{color:var(--muted);display:block}
+.raci{display:grid;grid-template-columns:28px 1fr auto;gap:6px 8px;align-items:center;font-size:12.5px}
+.raci .r{width:22px;height:22px;border-radius:6px;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;color:#fff}
+.r.V{background:var(--brand)}.r.M{background:var(--violet)}.r.I{background:#7a8794}
+.tg{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;margin-top:8px}
+.sw{width:36px;height:20px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;border:0;flex:none}
+.sw::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
+.sw.on{background:var(--green)}.sw.on::after{left:18px}
+
+/* Extern */
+.ext-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.ext-bar select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--ink)}
+.ext{border:1px solid var(--line);border-radius:14px;overflow:hidden;max-width:820px;margin:0 auto;background:var(--bg)}
+.ext-h{background:#16202a;color:#fff;padding:14px 18px}
+.ext-h b{font-size:15px}
+.ext-h small{display:block;opacity:.75;font-size:12px}
+.ext-b{padding:14px 18px}
+.ext-g{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin:14px 0 6px;color:var(--muted)}
+.ext-g.late{color:var(--red)}
+.ec{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.ec.late{border-left-color:var(--red)}
+.ec .t{font-weight:700;font-size:14px}
+.ec .ask{margin:6px 0;font-size:13px}
+.ec details{font-size:12.5px;color:var(--muted);margin:4px 0}
+.ec details summary{cursor:pointer;color:var(--brand-d);font-weight:600}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.form{display:none;margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+.form.on{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.form input{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;flex:1;min-width:160px;background:var(--surface);color:var(--ink)}
+.ec.done{opacity:.55}
+
+/* Wochenrunde */
+.rev{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.rev h3{margin:0 0 6px;font-size:13px;display:flex;gap:8px;align-items:center}
+.ri{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;border-top:1px solid var(--line);padding:7px 0;font-size:13px}
+.ri small{color:var(--muted);display:block;font-size:11.5px}
+.ri .a{display:flex;gap:5px;flex-wrap:wrap}
+@media(max-width:900px){.flow,.grid3,.kpis{grid-template-columns:1fr 1fr}.akte{grid-template-columns:1fr}.trow{grid-template-columns:30px 1fr}.trow>*:nth-child(n+3){grid-column:2}.lvl::after{display:none}}
+#p-import table.ap{display:block;overflow-x:auto}
+@media(max-width:760px){#p-import .kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}#p-import .grid3{grid-template-columns:1fr}.tabs{overflow-x:auto}}
+/* App-Zusätze */
+.top .sp{flex:1}
+.top a.lnk{color:var(--brand-d);font-size:12.5px;text-decoration:none;font-weight:600}
+.tabs button .n{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:99px;background:var(--red);color:#fff;font-size:10.5px;line-height:17px;text-align:center}
+.tabs button .n.z{background:var(--line);color:var(--muted)}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+textarea{width:100%;resize:vertical;min-height:54px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px}
+.lbl{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:10px 0 3px}
+.row2{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row2>input{flex:1;min-width:120px}
+.btn.del{color:var(--red)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn[disabled]{opacity:.5;cursor:default}
+.kpi.on{background:var(--brand-soft)}
+.empty{color:var(--muted);font-size:13px;padding:14px;text-align:center;border:1px dashed var(--line);border-radius:10px}
+.ttl{font-size:19px;font-weight:700;width:100%;border:1px solid transparent;background:transparent;padding:4px 6px;margin-left:-6px}
+.ttl:hover,.ttl:focus{border-color:var(--line);background:var(--surface)}
+.pbtn{display:inline-flex;gap:4px}.pbtn button{width:30px;height:28px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:800;cursor:pointer}
+.pbtn button.on.A{background:var(--red);color:#fff;border-color:var(--red)}.pbtn button.on.B{background:var(--amber);color:#fff;border-color:var(--amber)}.pbtn button.on.C{background:#7a8794;color:#fff;border-color:#7a8794}
+.steps span{cursor:pointer}
+.steps span:hover{border-color:var(--brand)}
+table.ap input,table.ap select{width:100%;padding:3px 5px;font-size:12.5px}
+table.ap td.x{width:28px;text-align:center}
+.pill{font-size:11px;font-weight:700;border-radius:99px;padding:1px 8px;background:var(--line);color:var(--muted)}
+.pill.laeuft{background:var(--brand-soft);color:var(--brand-d)}.pill.erledigt{background:var(--green-soft);color:var(--green)}.pill.idee{background:var(--violet-soft);color:var(--violet)}
+.ptr{border-top:1px solid var(--line);padding:6px 0;font-size:12.5px}
+.ptr:first-child{border-top:0}
+.ptr small{color:var(--muted);display:block}
+.rm{border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--surface)}
+.rm.done{opacity:.55;border-left-color:var(--green)}
+.rm .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px}
+.rm .tx{margin:6px 0;font-size:13.5px}
+.modal{position:fixed;inset:0;background:rgba(10,18,26,.5);display:none;align-items:center;justify-content:center;z-index:40;padding:16px}
+.modal.on{display:flex}
+.modal .box{background:var(--surface);border-radius:14px;padding:16px 18px;max-width:520px;width:100%;max-height:90vh;overflow:auto;border:1px solid var(--line)}
+.modal h3{margin:0 0 8px;font-size:15px}
+.zlink{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;word-break:break-all;margin:6px 0}
+.note{font-size:12px;color:var(--muted)}
+.err{color:var(--red);font-size:12.5px}
+@media(max-width:900px){.top{padding:10px 12px}.tabs,.wrap{padding-left:10px;padding-right:10px}.tabs{overflow-x:auto;flex-wrap:nowrap}.tabs button{white-space:nowrap}}
+</style>
+</head>
+<body>
+<div class="top"><h1>Themenboard · RBL / INFRA</h1><span class="badge">Themenregister</span><span class="sp"></span><span class="note" id="stand"></span><a class="lnk" href="https://innotechleipziggmbh.github.io/innotech-protokoll/" target="_blank" rel="noopener">Protokoll ↗</a></div>
+<div id="loaderr" class="err" style="display:none;padding:10px 20px"></div>
+<div class="tabs" id="tabs">
+  <button data-tab="karte" class="on">Themenlandkarte</button>
+  <button data-tab="akte">Themenakte</button>
+  <button data-tab="runde">Wochenrunde</button>
+  <button data-tab="pkt">Protokollpunkte</button>
+  <button data-tab="rm">Rückmeldungen</button>
+  <button data-tab="zug">Externe Zugänge</button>
+</div>
+<div class="wrap">
+  <div class="panel on" id="p-karte"></div>
+  <div class="panel" id="p-akte"></div>
+  <div class="panel" id="p-runde"></div>
+  <div class="panel" id="p-pkt"></div>
+  <div class="panel" id="p-rm"></div>
+  <div class="panel" id="p-zug"></div>
+</div>
+<div class="modal" id="modal"><div class="box"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+const SB = "https://beszfzvxtfwdzimixdbo.supabase.co";
+const KEY = "sb_publishable_onY7q5GNCGOxkEuzEOySDA_XyIqR6Rw";
+const PROJ = "proj-rbl-infra";
+const ORDNER = "ordner-1786692984103";
+const STALE_DAYS = 21;
+const PHASEN = [["idee", "Idee"], ["skizze", "Skizze"], ["beauftragt", "Beauftragt"], ["umsetzung", "Umsetzung"], ["betrieb", "Betrieb"]];
+const FELDER = ["Wasser", "Wärme und Energie", "Rasen", "GLT und Betrieb", "Strom und Medien", "Digitalisierung", "Liegenschaften", "Allgemein"];
+const AP_STAND = [["idee", "Idee"], ["offen", "offen"], ["laeuft", "läuft"], ["erledigt", "erledigt"]];
+
+// ---------- Hilfsfunktionen ----------
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const TODAY = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; })();
+const pd = s => { if (!s) return null; const m = String(s).slice(0, 10).match(/^(\d{4})-(\d\d)-(\d\d)$/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+const iso = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const fmt = s => { const d = pd(s); return d ? String(d.getDate()).padStart(2, "0") + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + d.getFullYear() : ""; };
+const addDays = (s, n) => { const d = pd(s) || new Date(TODAY); d.setDate(d.getDate() + n); return iso(d); };
+const daysSince = ts => { if (!ts) return 9999; const d = new Date(ts); d.setHours(0, 0, 0, 0); return Math.round((TODAY - d) / 864e5); };
+const COL = ["#0BA1E2", "#6b4fd3", "#1b7f4b", "#c2410c", "#a21caf", "#0f766e", "#b45309"];
+const colOf = n => COL[[...String(n)].reduce((a, c) => a + c.charCodeAt(0), 0) % COL.length];
+const ini = n => String(n).trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
+const av = n => `<span class="av" style="background:${colOf(n)}">${esc(ini(n))}</span>`;
+const uid = p => p + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const norm = s => String(s || "").trim().toLowerCase();
+
+let session = null; // nur für die Verwaltung der externen Zugänge
+function hdrs(extra) {
+  const h = { apikey: KEY, Authorization: "Bearer " + ((session && session.access_token) || KEY), "Content-Type": "application/json" };
+  return Object.assign(h, extra || {});
+}
+async function api(path, opt = {}) {
+  const r = await fetch(SB + "/rest/v1/" + path, Object.assign({}, opt, { headers: hdrs(opt.headers) }));
+  if (!r.ok) { let m = ""; try { m = (await r.json()).message; } catch (e) { } throw new Error(m || ("HTTP " + r.status)); }
+  if (r.status === 204) return null;
+  const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+async function rpc(name, body) {
+  const r = await fetch(SB + "/rest/v1/rpc/" + name, { method: "POST", headers: hdrs(), body: JSON.stringify(body || {}) });
+  if (!r.ok) { let m = ""; try { m = (await r.json()).message; } catch (e) { } throw new Error(m || ("HTTP " + r.status)); }
+  const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+function toast(m, err) { const t = $("#toast"); t.textContent = m; t.style.background = err ? "#b3261e" : ""; t.classList.add("on"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), err ? 5000 : 2600); }
+
+// ---------- Daten ----------
+const S = { themen: [], bet: [], ap: [], verl: [], rm: [], todos: [], proto: [] };
+let sel = null, tab = "karte", fKpi = null, fLieg = "alle", zugaenge = null;
+
+async function loadAll(silent) {
+  try {
+    const pq = "protokolle?select=id,updated_at,meta:data->meta,rows:data->data,secs:data->sections&gf_only=eq.false&" + encodeURIComponent("data->meta->>ordner_id") + "=eq." + ORDNER;
+    const [t, b, a, v, r, td, pr] = await Promise.all([
+      api("themen?select=*&order=pos.asc,created_at.asc"),
+      api("thema_beteiligte?select=*&order=pos.asc"),
+      api("thema_ap?select=*&order=pos.asc"),
+      api("thema_verlauf?select=*&order=datum.desc,created_at.desc&limit=1500"),
+      api("thema_rueckmeldung?select=*&order=created_at.desc&limit=300"),
+      api("projekt_todos?select=*&thema_id=not.is.null&order=created_at.asc"),
+      api(pq).catch(() => [])
+    ]);
+    S.themen = t || []; S.bet = b || []; S.ap = a || []; S.verl = v || []; S.rm = r || []; S.todos = td || []; S.proto = pr || [];
+    $("#stand").textContent = "Stand " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+    $("#loaderr").style.display = "none";
+  } catch (e) {
+    if (!silent) { $("#loaderr").textContent = "Daten konnten nicht geladen werden: " + e.message; $("#loaderr").style.display = "block"; }
+    return false;
+  }
+  return true;
+}
+const T = id => S.themen.find(t => t.id === id);
+const betOf = id => S.bet.filter(b => b.thema_id === id);
+const apOf = id => S.ap.filter(a => a.thema_id === id);
+const verlOf = id => S.verl.filter(v => v.thema_id === id);
+const rmOf = id => S.rm.filter(r => r.thema_id === id);
+const todosOf = id => S.todos.filter(x => x.thema_id === id);
+function protoPoints(id) {
+  const out = [];
+  S.proto.forEach(p => {
+    const labels = {}; (p.secs || []).forEach(s => labels[s.key] = s.label);
+    Object.keys(p.rows || {}).forEach(k => (p.rows[k] || []).forEach(r => {
+      if (r && r.themaId === id) out.push({ pid: p.id, datum: (p.meta && p.meta.datum) || "", nr: p.meta && p.meta.nr, typ: (p.meta && p.meta.typ) || "", sec: labels[k] || "", row: r });
+    }));
+  });
+  return out.sort((a, b) => String(b.datum).localeCompare(String(a.datum)));
+}
+function lastMove(t) {
+  let m = new Date(t.letzte_bewegung).getTime() || 0;
+  protoPoints(t.id).forEach(p => { const d = pd(p.datum); if (d) m = Math.max(m, d.getTime()); });
+  todosOf(t.id).forEach(x => { const d = new Date(x.updated_at).getTime(); if (d) m = Math.max(m, d); });
+  return m;
+}
+
+// ---------- Ableitungen ----------
+const isOpen = t => t.status === "offen";
+const isLate = t => isOpen(t) && t.naechster_termin && pd(t.naechster_termin) < TODAY;
+const stillDays = t => Math.max(0, Math.round((TODAY - new Date(new Date(lastMove(t)).setHours(0, 0, 0, 0))) / 864e5));
+const wvOk = t => !t.wiedervorlage || pd(t.wiedervorlage) <= TODAY;
+const isStale = t => isOpen(t) && stillDays(t) >= STALE_DAYS && wvOk(t);
+const noK = t => isOpen(t) && !t.kuemmerer;
+const noStep = t => isOpen(t) && !t.naechster_schritt;
+const wvDue = t => isOpen(t) && t.wiedervorlage && pd(t.wiedervorlage) <= TODAY;
+const rmOpen = () => S.rm.filter(r => !r.bearbeitet);
+const KPI = {
+  offen: { l: "Themen offen", f: t => isOpen(t), c: "" },
+  late: { l: "überfällig", f: isLate, c: "warn" },
+  noK: { l: "ohne Kümmerer", f: noK, c: "warn" },
+  stale: { l: "seit " + STALE_DAYS + " Tagen unbewegt", f: isStale, c: "amb" },
+  noStep: { l: "ohne nächsten Schritt", f: noStep, c: "amb" }
+};
+
+function people() {
+  const m = new Map();
+  const add = (n, f) => { n = (n || "").trim(); if (!n || /^(alle|innotech.*|rbl|siemens|b-plan|blauig)$/i.test(n)) return; if (!m.has(n) || (!m.get(n) && f)) m.set(n, f || m.get(n) || ""); };
+  S.bet.forEach(b => add(b.name, b.firma));
+  S.themen.forEach(t => { add(t.kuemmerer, t.kuemmerer_firma); add(t.naechster_wer, ""); });
+  if (zugaenge) zugaenge.forEach(z => add(z.name, z.firma));
+  return [...m.entries()].map(([name, firma]) => ({ name, firma })).sort((a, b) => a.name.localeCompare(b.name, "de"));
+}
+const firmaOf = n => { const p = people().find(x => norm(x.name) === norm(n)); return p ? p.firma : ""; };
+const dlPeople = () => `<datalist id="dl-people">${people().map(p => `<option value="${esc(p.name)}">${esc(p.firma)}</option>`).join("")}</datalist>`;
+
+// ---------- Schreiben ----------
+async function patchThema(id, f, log) {
+  const row = await api("themen?id=eq." + id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(f) });
+  if (row && row[0]) Object.assign(T(id), row[0]);
+  if (log) await addVerlauf(id, "Änderung", log);
+}
+async function addVerlauf(id, quelle, text, datum) {
+  const r = await api("thema_verlauf", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ thema_id: id, quelle, text, datum: datum || iso(TODAY) }) });
+  if (r && r[0]) S.verl.unshift(r[0]);
+  const t = T(id); if (t) t.letzte_bewegung = new Date().toISOString();
+}
+async function guard(fn) { try { await fn(); } catch (e) { toast("Speichern fehlgeschlagen: " + e.message, true); await loadAll(true); } render(); }
+
+// ---------- Landkarte ----------
+let showDone = false;
+function renderKarte() {
+  const act = S.themen.filter(isOpen);
+  const liegs = [...new Set(S.themen.flatMap(t => t.liegenschaften || []))].sort((a, b) => a.localeCompare(b, "de"));
+  const kp = Object.entries(KPI).map(([k, d]) => `<button class="kpi ${d.c}${fKpi === k ? " on" : ""}" data-k="${k}"><b>${act.filter(d.f).length}</b><span>${d.l}</span></button>`).join("");
+  const chips = ["alle", ...liegs].map(l => `<span class="chip${fLieg === l ? " on" : ""}" data-l="${esc(l)}">${l === "alle" ? "Alle Liegenschaften" : esc(l)}</span>`).join("") +
+    `<span class="chip${showDone ? " on" : ""}" data-showdone="1" style="margin-left:auto">auch erledigte</span>`;
+  let list = S.themen.filter(t => showDone || isOpen(t));
+  if (fKpi && fKpi !== "offen") list = list.filter(KPI[fKpi].f);
+  if (fLieg !== "alle") list = list.filter(t => (t.liegenschaften || []).includes(fLieg));
+  const felder = [...FELDER, ...new Set(list.map(t => t.handlungsfeld).filter(f => !FELDER.includes(f)))];
+  const pr = { A: 0, B: 1, C: 2 };
+  let html = "";
+  felder.forEach(f => {
+    const rows = list.filter(t => t.handlungsfeld === f).sort((a, b) => (isOpen(b) - isOpen(a)) || (pr[a.prio] - pr[b.prio]) || ((isLate(b) ? 1 : 0) - (isLate(a) ? 1 : 0)) || a.titel.localeCompare(b.titel, "de"));
+    if (!rows.length) return;
+    html += `<div class="feld"><div class="feld-h">${esc(f)} <span class="chip">${rows.length}</span><i></i></div>${rows.map(trow).join("")}</div>`;
+  });
+  if (!html) html = `<div class="empty">Keine Themen für diesen Filter.</div>`;
+  $("#p-karte").innerHTML = `<h2>Themenlandkarte</h2><p class="sub">Alle Themen nach Handlungsfeld. Rot: überfällig oder kein Kümmerer. Orange: lange nicht bewegt. Klick auf ein Thema öffnet die Themenakte.</p>
+    <div class="kpis">${kp}</div><div class="filters">${chips}</div>${html}`;
+}
+function trow(t) {
+  const late = isLate(t), stale = isStale(t), nk = noK(t), sd = stillDays(t);
+  const ph = Math.max(0, PHASEN.findIndex(p => p[0] === t.phase));
+  const phase = `<span class="phase">${PHASEN.map((p, i) => `<i class="${i <= ph ? "f" : ""}"></i>`).join("")}</span>`;
+  const who = t.kuemmerer ? `<div class="who">${av(t.kuemmerer)}<span>${esc(t.kuemmerer)}<br><small class="note">${esc(t.kuemmerer_firma || "")}</small></span></div>`
+    : `<div class="who none">⚠ kein Kümmerer${t.kuemmerer_firma ? `<small class="note" style="font-weight:400">nur ${esc(t.kuemmerer_firma)}</small>` : ""}</div>`;
+  let nx;
+  if (!isOpen(t)) nx = `<div class="nx"><small>${t.status === "erledigt" ? "erledigt" : "archiviert"}</small></div>`;
+  else if (t.naechster_schritt) {
+    const d = pd(t.naechster_termin);
+    const days = d ? Math.round((TODAY - d) / 864e5) : 0;
+    nx = `<div class="nx">${esc(t.naechster_schritt)}<small>${d ? (late ? `<span class="d l">überfällig seit ${fmt(t.naechster_termin)}</span>` : `bis ${fmt(t.naechster_termin)}`) : `<span style="color:var(--amber)">ohne Termin</span>`}${t.naechster_wer ? " · " + esc(t.naechster_wer) : ""}</small></div>`;
+  } else nx = `<div class="nx" style="color:var(--amber);font-weight:700">kein nächster Schritt</div>`;
+  const st = !isOpen(t) ? "" : stale ? `<span class="chip amber">seit ${sd} Tagen still</span>` : `<span class="chip">${sd === 0 ? "heute" : "vor " + sd + " Tagen"}</span>`;
+  const rmc = rmOf(t.id).filter(r => !r.bearbeitet).length;
+  return `<div class="trow ${late || nk ? "late" : stale ? "stale" : ""}" data-open="${t.id}">
+    <span class="prio ${t.prio}">${t.prio}</span>
+    <div><div class="tt">${esc(t.titel)}</div><div class="tm">${(t.liegenschaften || []).map(l => `<span class="chip">${esc(l)}</span>`).join("")}${phase}<span>${esc((PHASEN.find(p => p[0] === t.phase) || [0, ""])[1])}</span>${rmc ? `<span class="chip red">${rmc} Rückmeldung${rmc > 1 ? "en" : ""}</span>` : ""}${t.extern_sichtbar ? `<span class="chip violet">extern sichtbar</span>` : ""}</div></div>
+    ${who}${nx}<div>${st}</div></div>`;
+}
+
+// ---------- Wochenrunde ----------
+function renderRunde() {
+  const act = S.themen.filter(isOpen);
+  const sorted = (a) => a.slice().sort((x, y) => ({ A: 0, B: 1, C: 2 }[x.prio] - { A: 0, B: 1, C: 2 }[y.prio]) || x.titel.localeCompare(y.titel, "de"));
+  const item = (t, sub, acts) => `<div class="ri"><div><b>${esc(t.titel)}</b> <span class="prio ${t.prio}" style="display:inline-flex;width:18px;height:18px;font-size:10px;vertical-align:middle">${t.prio}</span><small>${sub}</small></div><div class="a">${acts}</div></div>`;
+  const open = id => `<button class="btn sm" data-open="${id}">Akte</button>`;
+  const secs = [];
+  const l1 = sorted(act.filter(noK));
+  secs.push(["1 · Ohne Kümmerer", l1, t => item(t, esc(t.kuemmerer_firma ? "heute nur " + t.kuemmerer_firma : "niemand eingetragen"), `<input list="dl-people" placeholder="Name" data-k="${t.id}" style="width:150px;padding:3px 6px"><button class="btn sm pri" data-ksave="${t.id}">setzen</button>${open(t.id)}`)]);
+  const l2 = sorted(act.filter(isLate));
+  secs.push(["2 · Überfällig", l2, t => item(t, `<span style="color:var(--red)">seit ${fmt(t.naechster_termin)}</span> · ${esc(t.naechster_schritt || "")}${t.naechster_wer ? " · " + esc(t.naechster_wer) : ""}`, `<button class="btn sm" data-shift="${t.id}:7">+7 Tage</button><button class="btn sm" data-shift="${t.id}:14">+14 Tage</button><button class="btn sm pri" data-done="${t.id}">Erledigt</button>${open(t.id)}`)]);
+  const l3 = sorted(act.filter(t => isStale(t) && !isLate(t)));
+  secs.push(["3 · Lange nicht bewegt", l3, t => item(t, `seit ${stillDays(t)} Tagen kein Eintrag${t.wiedervorlage ? " · Wiedervorlage war " + fmt(t.wiedervorlage) : ""}`, `<button class="btn sm" data-wv="${t.id}:28">4 Wochen zurückstellen</button>${open(t.id)}`)]);
+  const l4 = sorted(act.filter(t => noStep(t)));
+  secs.push(["4 · Ohne nächsten Schritt", l4, t => item(t, "Was ist der nächste Schritt?", `<input placeholder="Nächster Schritt" data-step="${t.id}" style="width:230px;padding:3px 6px"><input type="date" data-stepd="${t.id}" style="padding:3px 6px"><button class="btn sm pri" data-stepsave="${t.id}">setzen</button>${open(t.id)}`)]);
+  const l5 = sorted(act.filter(wvDue));
+  secs.push(["5 · Wiedervorlage fällig", l5, t => item(t, "Wiedervorlage " + fmt(t.wiedervorlage), `<button class="btn sm" data-wv="${t.id}:14">2 Wochen</button><button class="btn sm" data-wv="${t.id}:28">4 Wochen</button>${open(t.id)}`)]);
+  const rn = rmOpen().length;
+  let html = `<h2>Wochenrunde</h2><p class="sub">Die Runde arbeitet fünf Listen ab. Jede Zeile hat Schnellaktionen. Was erledigt ist, verschwindet aus der Liste.${rn ? ` <a href="#" data-tab="rm" style="color:var(--red);font-weight:700">${rn} Rückmeldung${rn > 1 ? "en" : ""} von Externen warten auf Prüfung</a>` : ""}</p>${dlPeople()}`;
+  const total = secs.reduce((a, s) => a + s[1].length, 0);
+  secs.forEach(([h, list, fn]) => { html += `<div class="rev"><h3>${h} <span class="chip ${list.length ? "red" : "green"}">${list.length}</span></h3>${list.length ? list.map(fn).join("") : `<div class="note" style="padding:4px 0">Nichts offen.</div>`}</div>`; });
+  if (!total) html += `<div class="empty">Alles im grünen Bereich.</div>`;
+  $("#p-runde").innerHTML = html;
+}
+
+// ---------- Rückmeldungen ----------
+const ART = { erledigt: "meldet Schritt als erledigt", rueckfrage: "stellt Rückfrage", termin: "schlägt neuen Termin vor" };
+function renderRm() {
+  const list = S.rm.slice().sort((a, b) => (a.bearbeitet - b.bearbeitet) || String(b.created_at).localeCompare(String(a.created_at)));
+  const html = list.map(r => {
+    const t = T(r.thema_id);
+    return `<div class="rm ${r.bearbeitet ? "done" : ""}"><div class="h"><b>${esc(r.zugang_name || "Extern")}</b><span class="chip">${esc(r.zugang_firma || "")}</span><span>${ART[r.art] || r.art}</span><span class="note">${new Date(r.created_at).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}</span></div>
+      <div class="note" style="margin-top:2px">Thema: <a href="#" data-open="${r.thema_id}" style="color:var(--brand-d);font-weight:600">${esc(t ? t.titel : "(gelöscht)")}</a></div>
+      ${r.text ? `<div class="tx">${esc(r.text)}</div>` : ""}${r.neuer_termin ? `<div class="tx"><b>Vorgeschlagener Termin: ${fmt(r.neuer_termin)}</b></div>` : ""}
+      ${r.bearbeitet ? `<div class="note">bearbeitet</div>` : `<div class="acts">${r.art === "termin" ? `<button class="btn sm pri" data-rm-term="${r.id}">Termin übernehmen</button>` : ""}${r.art === "erledigt" ? `<button class="btn sm pri" data-rm-done="${r.id}">Schritt abschließen</button>` : ""}<button class="btn sm" data-rm-ok="${r.id}">als bearbeitet markieren</button><button class="btn sm" data-open="${r.thema_id}">Akte</button></div>`}</div>`;
+  }).join("");
+  $("#p-rm").innerHTML = `<h2>Rückmeldungen von Externen</h2><p class="sub">Was Externe über ihren Link gemeldet haben. Erledigt-Meldungen schließen den Schritt erst, wenn du sie bestätigst.</p>${html || `<div class="empty">Noch keine Rückmeldungen.</div>`}`;
+}
+
+// ---------- Themenakte ----------
+let editNext = false;
+function renderAkte() {
+  const el = $("#p-akte");
+  if (!sel || !T(sel)) { const f = S.themen.find(isOpen) || S.themen[0]; sel = f ? f.id : null; }
+  const t = T(sel);
+  const opts = S.themen.slice().sort((a, b) => (isOpen(b) - isOpen(a)) || a.titel.localeCompare(b.titel, "de")).map(x => `<option value="${x.id}"${x.id === sel ? " selected" : ""}>${esc(x.titel)}${isOpen(x) ? "" : " (" + x.status + ")"}</option>`).join("");
+  const pick = `<div class="row2" style="margin-bottom:12px"><span class="note">Thema wählen:</span><select id="akte-sel" style="flex:1;max-width:520px">${opts}</select><button class="btn pri" data-new="1">+ Neues Thema</button></div>`;
+  if (!t) { el.innerHTML = pick + `<div class="empty">Noch keine Themen.</div>`; return; }
+  const late = isLate(t), ph = Math.max(0, PHASEN.findIndex(p => p[0] === t.phase));
+  const bet = betOf(t.id), aps = apOf(t.id), pts = protoPoints(t.id), tds = todosOf(t.id);
+  const sumB = aps.reduce((a, x) => a + (Number(x.budget) || 0), 0);
+  const eur = n => n == null || n === "" ? "" : Number(n).toLocaleString("de-DE") + " €";
+
+  // Verlauf (Änderungen, Rückmeldungen, Notizen)
+  const vl = verlOf(t.id).map(v => ({ d: v.datum, q: v.quelle, x: v.text }))
+    .sort((a, b) => String(b.d).localeCompare(String(a.d)));
+  const tl = vl.slice(0, 40).map(v => `<div class="${/Protokoll|Workshop/.test(v.q) ? "" : "info"}"><b>${fmt(v.d)}</b> · ${esc(v.q)}<small>${esc(v.x)}</small></div>`).join("") || `<div class="note">Noch kein Verlauf.</div>`;
+
+  const nxView = t.naechster_schritt ? `<div class="tx">${esc(t.naechster_schritt)}</div><div>${esc(t.naechster_wer || "niemand zugeordnet")}${t.naechster_termin ? " · bis <b>" + fmt(t.naechster_termin) + "</b>" + (late ? " (überfällig)" : "") : " · <span style='color:var(--amber)'>ohne Termin</span>"}</div>
+      <div class="acts"><button class="btn sm" data-shiftb="7">+7 Tage</button><button class="btn sm" data-shiftb="14">+14 Tage</button><button class="btn sm pri" data-donebtn="1">✓ Erledigt</button><button class="btn sm" data-editnext="1">Bearbeiten</button></div>`
+    : `<div class="tx" style="color:var(--amber)">Kein nächster Schritt eingetragen.</div><div class="acts"><button class="btn sm pri" data-editnext="1">Schritt festlegen</button></div>`;
+  const nxEdit = `<input id="nx-t" placeholder="Was passiert als Nächstes?" value="${esc(t.naechster_schritt || "")}" style="width:100%;margin:4px 0"><div class="row2"><input id="nx-w" list="dl-people" placeholder="Wer" value="${esc(t.naechster_wer || "")}"><input id="nx-d" type="date" value="${esc(t.naechster_termin || "")}" style="flex:none"></div><div class="acts"><button class="btn sm pri" data-savenext="1">Speichern</button><button class="btn sm" data-editnext="0">Abbrechen</button></div>`;
+
+  const ptRows = pts.map(p => `<div class="ptr pk" data-pp="${esc(p.pid)}" data-pr="${esc(p.row._rid || "")}"><div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1"><b>${fmt(p.datum)}</b>${p.typ ? " · " + esc(p.typ) : ""}${p.nr && p.nr !== "NaN" && p.nr !== "-" ? " · Nr. " + esc(p.nr) : ""}${p.sec ? " · <span class='note'>" + esc(p.sec) + "</span>" : ""}<div><b>${esc(p.row.titel || shortTxt(p.row.inhalt, 70))}</b></div>${p.row.titel && p.row.inhalt ? `<div class="note" style="margin:2px 0" title="${esc(shortTxt(p.row.inhalt, 1200))}">${esc(shortTxt(p.row.inhalt, 400))}</div>` : ""}<small>${ptMeta(p.row)}</small></div>${p.row._rid ? `<button class="btn sm ghost" data-pkun="1" title="Zuordnung zu diesem Thema lösen">lösen</button>` : ""}</div></div>`).join("");
+  const frei = allPoints().filter(x => !x.row.themaId);
+  const ptAdd = frei.length ? `<select data-pkadd="1" style="width:100%;margin-top:8px"><option value="">+ Weiteren Protokollpunkt diesem Thema zuordnen (${frei.length} ohne Thema)</option>${frei.map(x => `<option value="${esc(x.pid + "|" + x.row._rid)}">${fmt(x.datum)} · ${esc(shortTxt(x.row.titel || x.row.inhalt, 80))}</option>`).join("")}</select>` : "";
+  const apRows = aps.map(a => `<tr data-ap="${a.id}"><td style="width:60px"><input data-apf="nr" value="${esc(a.nr || "")}"></td><td><input data-apf="inhalt" value="${esc(a.inhalt)}"></td><td style="width:140px"><input data-apf="wer" value="${esc(a.wer || "")}"></td><td style="width:90px"><input data-apf="budget" inputmode="numeric" value="${a.budget == null ? "" : esc(a.budget)}" placeholder="€"></td><td style="width:100px"><select data-apf="stand">${AP_STAND.map(s => `<option value="${s[0]}"${a.stand === s[0] ? " selected" : ""}>${s[1]}</option>`).join("")}</select></td><td class="x"><button class="btn sm ghost del" data-apdel="${a.id}" title="Entfernen">✕</button></td></tr>`).join("");
+
+  const betRows = bet.map(b => `<span class="r ${b.rolle}">${b.rolle}</span><span>${esc(b.name)}</span><span><span class="chip">${esc(b.firma || "")}</span> <button class="btn sm ghost" data-betrole="${b.id}" title="M = mitwirkend, I = informiert">${b.rolle === "M" ? "→ I" : "→ M"}</button><button class="btn sm ghost del" data-betdel="${b.id}">✕</button></span>`).join("");
+  const kv = t.kuemmerer ? `<span class="r V">V</span><span><b>${esc(t.kuemmerer)}</b></span><span><span class="chip">${esc(t.kuemmerer_firma || "")}</span></span>` : `<span class="r V" style="background:var(--red)">V</span><span><b style="color:var(--red)">Kein Kümmerer</b></span><span></span>`;
+
+  const sichtbar = zugaenge ? zugaenge.filter(z => z.aktiv && t.extern_sichtbar && (norm(t.kuemmerer) === norm(z.name) || norm(t.naechster_wer) === norm(z.name) || bet.some(b => norm(b.name) === norm(z.name)))).map(z => z.name) : null;
+
+  el.innerHTML = `${dlPeople()}${pick}
+  <div class="akte"><div>
+    <input class="ttl" data-f="titel" value="${esc(t.titel)}">
+    <div class="row2" style="margin:2px 0 10px">
+      <select data-f="handlungsfeld">${[...new Set([...FELDER, t.handlungsfeld])].map(f => `<option${f === t.handlungsfeld ? " selected" : ""}>${esc(f)}</option>`).join("")}</select>
+      <input data-f="liegenschaften" value="${esc((t.liegenschaften || []).join(", "))}" placeholder="Liegenschaften, durch Komma getrennt" style="max-width:280px">
+      <span class="pbtn">${["A", "B", "C"].map(p => `<button class="${p}${t.prio === p ? " on" : ""}" data-prio="${p}" title="Priorität ${p}">${p}</button>`).join("")}</span>
+      ${isOpen(t) ? "" : `<span class="chip ${t.status === "erledigt" ? "green" : ""}">${t.status}</span>`}
+    </div>
+    <div class="blk"><h3>Worum geht es (auch für Externe verständlich)</h3><textarea data-f="worum" placeholder="Kurz erklären, worum es geht">${esc(t.worum || "")}</textarea><label class="lbl">Ziel</label><textarea data-f="ziel" style="min-height:38px" placeholder="Woran erkennen wir, dass es fertig ist?">${esc(t.ziel || "")}</textarea></div>
+    <div class="blk"><h3>Phase</h3><div class="steps">${PHASEN.map((p, i) => `<span class="${i < ph ? "f" : ""}${i === ph ? " now" : ""}" data-phase="${p[0]}">${p[1]}</span>`).join("")}</div></div>
+    <div class="next ${late ? "late" : ""}"><div class="l">Nächster Schritt</div>${editNext ? nxEdit : nxView}</div>
+    <div class="blk"><h3>Arbeitspakete${aps.length ? " · Summe " + eur(sumB) : ""}</h3>${aps.length ? `<table class="ap"><tr><th>Nr.</th><th>Inhalt</th><th>Wer</th><th>Budget</th><th>Stand</th><th></th></tr>${apRows}</table>` : `<div class="note">Noch keine Arbeitspakete.</div>`}<div class="acts"><button class="btn sm" data-apadd="1">+ Arbeitspaket</button></div></div>
+    <div class="blk"><h3>Protokollpunkte · ${pts.length}</h3>${ptRows || `<div class="note">Noch kein Protokollpunkt zugeordnet.</div>`}${ptAdd}</div>
+    <div class="blk"><h3>Verlauf · Änderungen und Rückmeldungen</h3><div class="row2" style="margin-bottom:8px"><input id="vl-t" placeholder="Eintrag hinzufügen, z. B. Besprechung, Entscheidung, Hinweis" style="flex:3"><input id="vl-d" type="date" value="${iso(TODAY)}" style="flex:none"><button class="btn sm pri" data-vladd="1">Eintrag</button></div><div class="tl">${tl}</div></div>
+  </div><div>
+    <div class="blk"><h3>Zuständigkeit</h3><div class="raci">${kv}${betRows}</div>
+      <label class="lbl">Kümmerer (genau eine Person)</label><div class="row2"><input list="dl-people" data-f="kuemmerer" value="${esc(t.kuemmerer || "")}" placeholder="Name wählen oder eintragen" style="flex:2"><input data-f="kuemmerer_firma" value="${esc(t.kuemmerer_firma || "")}" placeholder="Firma" style="flex:1;min-width:90px"></div>
+      <div class="row2" style="margin-top:8px"><input id="bt-n" list="dl-people" placeholder="Beteiligte Person"><input id="bt-f" placeholder="Firma" style="max-width:110px"><button class="btn sm" data-betadd="1">+ M</button></div>
+      <p class="note" style="margin:8px 0 0">V = verantwortlich (Kümmerer), M = mitwirkend, I = informiert.</p></div>
+    <div class="blk"><h3>Steuerung</h3><div class="row2"><span class="note" style="min-width:110px">Letzte Bewegung</span><b>${stillDays(t) === 0 ? "heute" : "vor " + stillDays(t) + " Tagen"}</b></div>
+      <div class="row2" style="margin-top:6px"><span class="note" style="min-width:110px">Wiedervorlage</span><input type="date" data-f="wiedervorlage" value="${esc(t.wiedervorlage || "")}" style="flex:none"></div>
+      <div class="acts" style="margin-top:10px">${isOpen(t) ? `<button class="btn sm" data-status="erledigt">Thema erledigt</button><button class="btn sm" data-status="archiv">Archivieren</button>` : `<button class="btn sm pri" data-status="offen">Wieder öffnen</button>`}</div></div>
+    <div class="blk"><h3>Verknüpft</h3>
+      <div style="font-size:12.5px"><b>${pts.length}</b> Protokollpunkt${pts.length === 1 ? "" : "e"} · <b>${tds.length}</b> ToDo${tds.length === 1 ? "" : "s"}</div>
+      ${tds.map(x => `<div class="ptr"><label style="display:flex;gap:6px;align-items:flex-start"><input type="checkbox" data-todo="${x.id}"${x.status === "erledigt" ? " checked" : ""}><span${x.status === "erledigt" ? ' style="text-decoration:line-through;color:var(--muted)"' : ""}>${esc(x.text)}<small>${esc(x.verantwortlich || "")}${x.termin ? " · " + fmt(x.termin) : ""}</small></span></label></div>`).join("")}
+      <div class="row2" style="margin-top:8px"><input id="td-t" placeholder="ToDo zu diesem Thema anlegen"><button class="btn sm pri" data-todoadd="1">+ ToDo</button></div></div>
+    <div class="blk"><h3>Freigabe für Externe</h3>
+      <div class="tg"><span>Im Freigabelink sichtbar</span><button class="sw${t.extern_sichtbar ? " on" : ""}" data-extern="1" aria-label="Freigabe umschalten"></button></div>
+      <p class="note" style="margin:8px 0 0">${t.extern_sichtbar ? "Sichtbar für Kümmerer, Beteiligte und die Person beim nächsten Schritt, sofern sie einen Zugang hat." + (sichtbar ? (sichtbar.length ? " Aktuell: " + esc(sichtbar.join(", ")) + "." : " Aktuell hat dazu niemand einen aktiven Zugang.") : "") : "Nicht freigegeben. Externe sehen dieses Thema nicht."} Budgets und interne Notizen bleiben immer ausgeblendet.</p>
+      <label class="lbl">Interne Notiz (nie extern)</label><textarea data-f="interne_notiz" style="min-height:44px">${esc(t.interne_notiz || "")}</textarea></div>
+  </div></div>`;
+}
+
+// ---------- Dialoge ----------
+function openModal(html) { $("#modal .box").innerHTML = html; $("#modal").classList.add("on"); const i = $("#modal .box input,#modal .box select"); if (i) i.focus(); }
+function closeModal() { $("#modal").classList.remove("on"); }
+function newThemaDialog() {
+  openModal(`<h3>Neues Thema</h3><label class="lbl">Titel</label><input id="m-t" style="width:100%" placeholder="z. B. Brunnen TZ"><div class="row2" style="margin-top:8px"><select id="m-f">${FELDER.map(f => `<option>${f}</option>`).join("")}</select><select id="m-p"><option>A</option><option selected>B</option><option>C</option></select></div><div class="acts" style="margin-top:12px"><button class="btn pri" data-m="newok">Anlegen</button><button class="btn" data-m="close">Abbrechen</button></div>`);
+}
+function doneDialog(id, rmId) {
+  const t = T(id);
+  openModal(`<h3>Schritt erledigt</h3><p class="note" style="margin:0 0 8px">${esc(t.naechster_schritt || "")}</p><label class="lbl">Wie geht es weiter? (leer lassen, wenn noch offen)</label><input id="m-s" style="width:100%" placeholder="Nächster Schritt"><div class="row2" style="margin-top:8px"><input id="m-w" list="dl-people" placeholder="Wer" value="${esc(t.kuemmerer || "")}"><input id="m-d" type="date" value="${addDays(iso(TODAY), 14)}" style="flex:none"></div>${dlPeople()}<div class="acts" style="margin-top:12px"><button class="btn pri" data-m="doneok" data-id="${id}" data-rm="${rmId || ""}">Übernehmen</button><button class="btn" data-m="close">Abbrechen</button></div>`);
+}
+async function doneOk(id, rmId) {
+  const t = T(id), s = $("#m-s").value.trim(), w = $("#m-w").value.trim(), d = $("#m-d").value;
+  await addVerlauf(id, "Änderung", "Schritt erledigt: " + (t.naechster_schritt || ""));
+  await patchThema(id, { naechster_schritt: s || null, naechster_wer: s ? (w || null) : null, naechster_termin: s && d ? d : null }, s ? "Neuer Schritt: " + s + (d ? " (bis " + fmt(d) + ")" : "") : null);
+  if (rmId) { await api("thema_rueckmeldung?id=eq." + rmId, { method: "PATCH", body: JSON.stringify({ bearbeitet: true }) }); const r = S.rm.find(x => x.id === rmId); if (r) r.bearbeitet = true; }
+}
+
+// ---------- Protokollpunkte (alle aufgenommenen Punkte, mit Zuordnung) ----------
+let fPkt = "ohne";
+const PKT_STOP = new Set(["thema", "themen", "punkt", "punkte", "sollen", "werden", "wurde", "wurden", "haben", "dieser", "diese", "dieses", "einer", "einen", "einem", "noch", "durch", "damit", "danach", "bitte", "alle", "nicht", "sowie", "ohne", "oder", "wenn", "dann", "über", "unter", "nach", "weiter", "weitere", "klären", "prüfen", "abstimmen"]);
+const stems = s => new Set(String(s || "").toLowerCase().replace(/[^a-zäöüß0-9\s-]/g, " ").split(/[\s-]+/).filter(w => w.length >= 5 && !PKT_STOP.has(w)).map(w => w.slice(0, 6)));
+function allPoints() {
+  const out = [];
+  S.proto.slice().sort((a, b) => String((b.meta || {}).datum || "").localeCompare(String((a.meta || {}).datum || ""))).forEach(p => {
+    const secs = p.secs || [], labels = {}; secs.forEach(s => labels[s.key] = s.label);
+    const keys = secs.map(s => s.key).concat(Object.keys(p.rows || {}).filter(k => !labels[k]));
+    keys.forEach(k => (p.rows[k] || []).forEach(r => {
+      if (!r || !r._rid || !(String(r.titel || "").trim() || String(r.inhalt || "").trim())) return;
+      out.push({ pid: p.id, datum: (p.meta && p.meta.datum) || "", nr: p.meta && p.meta.nr, typ: (p.meta && p.meta.typ) || "", sec: labels[k] || "", row: r });
+    }));
+  });
+  return out;
+}
+const pktOhne = () => allPoints().filter(x => !x.row.themaId);
+function pktVorschlag(x) {
+  const ps = stems((x.row.titel || "") + " " + (x.row.inhalt || ""));
+  let best = null, sc = 0;
+  S.themen.filter(isOpen).forEach(t => { let n = 0; stems(t.titel).forEach(w => { if (ps.has(w)) n += 2; }); stems(t.worum).forEach(w => { if (ps.has(w)) n += 0.5; }); if (n > sc) { sc = n; best = t; } });
+  return sc >= 2 ? best : null;
+}
+const protoLabel = x => fmt(x.datum) + (x.typ ? " · " + x.typ : "") + (x.nr && x.nr !== "NaN" && x.nr !== "-" ? " · Nr. " + x.nr : "");
+function shortTxt(s, n) { s = String(s || "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+function ptMeta(r) { return [r.verantwortlich ? esc(r.verantwortlich) : "", r.termin ? "bis " + fmt(r.termin) : "", r.status ? `<span class="chip">${esc(r.status)}</span>` : ""].filter(Boolean).join(" · "); }
+function themaOptions(cur) {
+  const o = S.themen.filter(t => isOpen(t) || t.id === cur).sort((a, b) => a.titel.localeCompare(b.titel, "de"));
+  return o.map(t => `<option value="${t.id}"${t.id === cur ? " selected" : ""}>${esc(t.titel)}</option>`).join("");
+}
+function renderPkt() {
+  const el = $("#p-pkt"), all = allPoints(), un = all.filter(x => !x.row.themaId);
+  const list = fPkt === "ohne" ? un : all;
+  const filt = `<div class="filters" style="margin:0 0 10px"><span class="chip${fPkt === "ohne" ? " on" : ""}" data-pkf="ohne">Ohne Thema (${un.length})</span><span class="chip${fPkt === "alle" ? " on" : ""}" data-pkf="alle">Alle Punkte (${all.length})</span></div>`;
+  if (!S.proto.length) { el.innerHTML = `<h2>Protokollpunkte</h2><div class="empty">Keine Protokolle zu diesem Projekt gefunden.</div>`; return; }
+  const groups = [];
+  list.forEach(x => { let g = groups[groups.length - 1]; if (!g || g.pid !== x.pid) { g = { pid: x.pid, label: protoLabel(x), items: [] }; groups.push(g); } g.items.push(x); });
+  const body = groups.map(g => `<div class="blk"><h3>${esc(g.label)} · ${g.items.length} Punkt${g.items.length === 1 ? "" : "e"}</h3>${g.items.map(x => {
+    const r = x.row, th = r.themaId ? T(r.themaId) : null, vs = th ? null : pktVorschlag(x);
+    return `<div class="ptr pk" data-pp="${esc(x.pid)}" data-pr="${esc(r._rid)}"><div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1;min-width:260px">${x.sec ? `<small style="display:inline">${esc(x.sec)}</small>` : ""}<div><b>${esc(r.titel || shortTxt(r.inhalt, 70))}</b></div>${r.titel && r.inhalt ? `<div class="note" style="margin:2px 0" title="${esc(shortTxt(r.inhalt, 1200))}">${esc(shortTxt(r.inhalt, 260))}</div>` : ""}<small>${ptMeta(r)}</small></div>
+      <div style="flex:none;width:280px;max-width:100%"><select data-pkset="1" style="width:100%"><option value="">– Thema zuordnen –</option>${themaOptions(r.themaId)}</select>
+      <div class="acts" style="margin-top:4px">${th ? `<button class="btn sm ghost" data-open="${th.id}">Thema öffnen</button>` : `${vs ? `<button class="btn sm" data-pkas="${vs.id}" title="Vorschlag nach Stichworten">→ ${esc(shortTxt(vs.titel, 32))}</button>` : ""}<button class="btn sm ghost" data-pknew="1">+ Neues Thema</button>`}</div></div></div></div>`;
+  }).join("")}</div>`).join("");
+  el.innerHTML = `<h2>Protokollpunkte</h2><p class="sub">Alle Punkte aus den Protokollen dieses Projekts. Eine Zuordnung wird sofort im Protokoll gespeichert und dort als Link zum Thema angezeigt. Protokolle nur für die Geschäftsführung sind hier nicht enthalten.</p>${filt}${body || `<div class="empty">${fPkt === "ohne" ? "Alle Punkte sind einem Thema zugeordnet." : "Keine Punkte."}</div>`}`;
+}
+async function assignPoint(pid, rid, themaId) {
+  await rpc("thema_punkt_zuordnen", { p_proto: pid, p_rid: rid, p_thema: themaId || null });
+  const p = S.proto.find(x => x.id === pid); if (!p) return;
+  Object.keys(p.rows || {}).forEach(k => (p.rows[k] || []).forEach(r => { if (r && r._rid === rid) { if (themaId) r.themaId = themaId; else delete r.themaId; } }));
+}
+
+function pktNewDialog(pt) {
+  const r = pt.row;
+  openModal(`<h3>Neues Thema aus Protokollpunkt</h3><p class="note" style="margin:0 0 8px">${esc(fmt(pt.datum))} · ${esc(shortTxt(r.inhalt || r.titel, 160))}</p><label class="lbl">Titel des Themas</label><input id="m-t" style="width:100%" value="${esc(shortTxt(r.titel || r.inhalt, 90))}"><div class="row2" style="margin-top:8px"><select id="m-f">${FELDER.map(f => `<option${f === "Allgemein" ? " selected" : ""}>${f}</option>`).join("")}</select><select id="m-p"><option>A</option><option selected>B</option><option>C</option></select></div><div class="acts" style="margin-top:12px"><button class="btn pri" data-m="pknewok" data-pp="${esc(pt.pid)}" data-pr="${esc(r._rid)}">Thema anlegen und zuordnen</button><button class="btn" data-m="close">Abbrechen</button></div>`);
+}
+
+// ---------- Anmeldung (nur für Zugänge) ----------
+async function ensureSession() {
+  if (!session) return;
+  if (session.expires_at - Date.now() / 1000 > 60) return;
+  try {
+    const r = await fetch(SB + "/auth/v1/token?grant_type=refresh_token", { method: "POST", headers: { apikey: KEY, "Content-Type": "application/json" }, body: JSON.stringify({ refresh_token: session.refresh_token }) });
+    if (!r.ok) throw new Error("expired");
+    saveSession(await r.json());
+  } catch (e) { session = null; zugaenge = null; try { sessionStorage.removeItem("themen-session"); } catch (x) { } }
+}
+function saveSession(j) {
+  session = { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: j.expires_at || (Math.floor(Date.now() / 1000) + (j.expires_in || 3600)), email: (j.user && j.user.email) || (session && session.email) || "" };
+  try { sessionStorage.setItem("themen-session", JSON.stringify(session)); } catch (e) { }
+}
+async function login(email, pw) {
+  const r = await fetch(SB + "/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: KEY, "Content-Type": "application/json" }, body: JSON.stringify({ email, password: pw }) });
+  if (!r.ok) throw new Error("Anmeldung fehlgeschlagen: falsche E-Mail oder falsches Passwort.");
+  saveSession(await r.json());
+}
+async function loadZug() { zugaenge = await api("thema_zugang?select=id,name,firma,aktiv,created_at&order=created_at.desc"); }
+const zugLink = tok => location.href.split("#")[0].split("?")[0].replace(/[^/]*$/, "") + "extern.html#t=" + tok;
+function sichtbareThemen(z) {
+  return S.themen.filter(t => isOpen(t) && t.extern_sichtbar && (norm(t.kuemmerer) === norm(z.name) || norm(t.naechster_wer) === norm(z.name) || betOf(t.id).some(b => norm(b.name) === norm(z.name))));
+}
+async function renderZug() {
+  const el = $("#p-zug");
+  await ensureSession();
+  if (!session) {
+    el.innerHTML = `<h2>Externe Zugänge</h2><p class="sub">Die Verwaltung der persönlichen Links ist nur mit dem Geschäftsführungs-Login möglich.</p>
+      <form id="zug-login" style="max-width:360px"><label class="lbl">E-Mail</label><input id="zl-e" type="email" autocomplete="username" style="width:100%" required><label class="lbl">Passwort</label><input id="zl-p" type="password" autocomplete="current-password" style="width:100%" required><div class="err" id="zl-err" style="margin-top:6px"></div><div class="acts" style="margin-top:10px"><button class="btn pri" type="submit">Anmelden</button></div></form>`;
+    return;
+  }
+  if (!zugaenge) { try { await loadZug(); } catch (e) { el.innerHTML = `<div class="err">Zugänge konnten nicht geladen werden: ${esc(e.message)}</div>`; return; } }
+  const rows = zugaenge.map(z => { const n = sichtbareThemen(z).length; return `<tr><td><b>${esc(z.name)}</b></td><td>${esc(z.firma || "")}</td><td>${z.aktiv ? '<span class="chip green">aktiv</span>' : '<span class="chip">gesperrt</span>'}</td><td>${n} Thema${n === 1 ? "" : "en"}</td><td class="acts" style="margin:0"><button class="btn sm" data-ztok="${z.id}">Neuen Link erzeugen</button><button class="btn sm ${z.aktiv ? "del" : ""}" data-zakt="${z.id}:${z.aktiv ? 0 : 1}">${z.aktiv ? "Sperren" : "Aktivieren"}</button></td></tr>`; }).join("");
+  el.innerHTML = `${dlPeople()}<div class="row2"><h2 style="margin:0;flex:1">Externe Zugänge</h2><span class="note">${esc(session.email)}</span><button class="btn sm" data-zlogout="1">Abmelden</button></div>
+    <p class="sub" style="margin-top:4px">Jede Person bekommt einen persönlichen Link ohne Passwort. Sie sieht nur Themen, die freigegeben sind und bei denen sie Kümmerer, Beteiligte oder zuständig für den nächsten Schritt ist. Der Name muss dazu genauso geschrieben sein wie im Thema.</p>
+    <div class="blk"><h3>Neuer Zugang</h3><div class="row2"><input id="zn-n" list="dl-people" placeholder="Name, z. B. Cornelius Tröger"><input id="zn-f" placeholder="Firma"><button class="btn pri" data-znew="1">Zugang anlegen</button></div></div>
+    ${zugaenge.length ? `<table class="ap"><tr><th>Name</th><th>Firma</th><th>Status</th><th>Sieht aktuell</th><th></th></tr>${rows}</table>` : `<div class="empty">Noch keine Zugänge angelegt.</div>`}`;
+}
+function linkDialog(name, tok) {
+  const l = zugLink(tok);
+  openModal(`<h3>Link für ${esc(name)}</h3><p class="note" style="margin:0">Dieser Link wird nur jetzt angezeigt. Bitte direkt kopieren und persönlich weitergeben. Ein neuer Link macht den alten ungültig.</p><div class="zlink" id="m-link">${esc(l)}</div><div class="acts"><button class="btn pri" data-m="copy">Link kopieren</button><button class="btn" data-m="close">Schließen</button></div>`);
+}
+
+// ---------- Rendern und Tabs ----------
+function setTab(t) {
+  tab = t;
+  $$(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  $$(".panel").forEach(p => p.classList.toggle("on", p.id === "p-" + t));
+  render();
+}
+function render() {
+  const rn = rmOpen().length;
+  const b = $('.tabs button[data-tab="rm"]'); if (b) b.innerHTML = `Rückmeldungen${rn ? `<span class="n">${rn}</span>` : ""}`;
+  const un = pktOhne().length, bp = $('.tabs button[data-tab="pkt"]'); if (bp) bp.innerHTML = `Protokollpunkte${un ? `<span class="n">${un}</span>` : ""}`;
+  if (tab === "karte") renderKarte(); else if (tab === "akte") renderAkte(); else if (tab === "runde") renderRunde(); else if (tab === "pkt") renderPkt(); else if (tab === "rm") renderRm(); else if (tab === "zug") renderZug();
+}
+
+// ---------- Ereignisse ----------
+document.addEventListener("click", e => {
+  const g = a => e.target.closest("[" + a + "]");
+  let x;
+  if ((x = g("data-m"))) return modalAct(x);
+  if ((x = g("data-open"))) { e.preventDefault(); sel = x.dataset.open; editNext = false; return setTab("akte"); }
+  if ((x = g("data-tab"))) { e.preventDefault(); return setTab(x.dataset.tab); }
+  if ((x = e.target.closest(".kpi")) && x.dataset.k) { fKpi = fKpi === x.dataset.k ? null : x.dataset.k; return render(); }
+  if ((x = g("data-l"))) { fLieg = x.dataset.l; return render(); }
+  if ((x = g("data-pkf"))) { fPkt = x.dataset.pkf; return render(); }
+  if ((x = g("data-pkas"))) { const r = x.closest("[data-pp]"); return guard(() => assignPoint(r.dataset.pp, r.dataset.pr, x.dataset.pkas)); }
+  if ((x = g("data-pkun"))) { const r = x.closest("[data-pp]"); return guard(() => assignPoint(r.dataset.pp, r.dataset.pr, null)); }
+  if ((x = g("data-pknew"))) { const r = x.closest("[data-pp]"), pt = allPoints().find(y => y.pid === r.dataset.pp && y.row._rid === r.dataset.pr); if (pt) pktNewDialog(pt); return; }
+  if ((x = g("data-showdone"))) { showDone = !showDone; return render(); }
+  if ((x = g("data-new"))) return newThemaDialog();
+  const t = T(sel);
+  if ((x = g("data-prio"))) return guard(() => patchThema(sel, { prio: x.dataset.prio }, "Priorität " + t.prio + " → " + x.dataset.prio));
+  if ((x = g("data-phase"))) { if (x.dataset.phase === t.phase) return; return guard(() => patchThema(sel, { phase: x.dataset.phase }, "Phase: " + PHASEN.find(p => p[0] === x.dataset.phase)[1])); }
+  if ((x = g("data-status"))) return guard(async () => { await patchThema(sel, { status: x.dataset.status }, x.dataset.status === "offen" ? "Thema wieder geöffnet" : x.dataset.status === "erledigt" ? "Thema als erledigt markiert" : "Thema archiviert"); });
+  if ((x = g("data-extern"))) return guard(() => patchThema(sel, { extern_sichtbar: !t.extern_sichtbar }, t.extern_sichtbar ? "Freigabe für Externe entzogen" : "Für Externe freigegeben"));
+  if ((x = g("data-editnext"))) { editNext = x.dataset.editnext === "1"; return render(); }
+  if ((x = g("data-savenext"))) return guard(async () => {
+    const s = $("#nx-t").value.trim(), w = $("#nx-w").value.trim(), d = $("#nx-d").value; editNext = false;
+    await patchThema(sel, { naechster_schritt: s || null, naechster_wer: w || null, naechster_termin: d || null }, s ? "Nächster Schritt: " + s + (d ? " (bis " + fmt(d) + ")" : "") : "Nächster Schritt entfernt");
+  });
+  if ((x = g("data-shiftb"))) return shiftTermin(sel, +x.dataset.shiftb);
+  if ((x = g("data-donebtn"))) return doneDialog(sel);
+  if ((x = g("data-shift"))) { const [id, n] = x.dataset.shift.split(":"); return shiftTermin(id, +n); }
+  if ((x = g("data-done"))) return doneDialog(x.dataset.done);
+  if ((x = g("data-wv"))) { const [id, n] = x.dataset.wv.split(":"); const d = addDays(iso(TODAY), +n); return guard(() => patchThema(id, { wiedervorlage: d }, "Zurückgestellt bis " + fmt(d))); }
+  if ((x = g("data-ksave"))) { const v = ($(`[data-k="${x.dataset.ksave}"]`) || {}).value; if (!v || !v.trim()) return toast("Bitte einen Namen eingeben.", true); return setKuemmerer(x.dataset.ksave, v.trim()); }
+  if ((x = g("data-stepsave"))) { const id = x.dataset.stepsave, s = ($(`[data-step="${id}"]`) || {}).value, d = ($(`[data-stepd="${id}"]`) || {}).value; if (!s || !s.trim()) return toast("Bitte den nächsten Schritt eingeben.", true); const tt = T(id); return guard(() => patchThema(id, { naechster_schritt: s.trim(), naechster_wer: tt.kuemmerer || null, naechster_termin: d || null }, "Nächster Schritt: " + s.trim() + (d ? " (bis " + fmt(d) + ")" : ""))); }
+  if ((x = g("data-apadd"))) return guard(async () => { const pos = Math.max(0, ...apOf(sel).map(a => a.pos)) + 1; const r = await api("thema_ap", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ thema_id: sel, nr: "", inhalt: "Neues Arbeitspaket", stand: "offen", pos }) }); S.ap.push(r[0]); });
+  if ((x = g("data-apdel"))) { if (!confirm("Arbeitspaket entfernen?")) return; return guard(async () => { await api("thema_ap?id=eq." + x.dataset.apdel, { method: "DELETE" }); S.ap = S.ap.filter(a => a.id !== x.dataset.apdel); }); }
+  if ((x = g("data-betadd"))) return guard(async () => {
+    const n = $("#bt-n").value.trim(); if (!n) return toast("Bitte einen Namen eingeben.", true);
+    const f = $("#bt-f").value.trim() || firmaOf(n) || null; const pos = Math.max(0, ...betOf(sel).map(b => b.pos)) + 1;
+    const r = await api("thema_beteiligte", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ thema_id: sel, name: n, firma: f, rolle: "M", pos }) }); S.bet.push(r[0]);
+    await addVerlauf(sel, "Änderung", "Beteiligt: " + n);
+  });
+  if ((x = g("data-betdel"))) return guard(async () => { await api("thema_beteiligte?id=eq." + x.dataset.betdel, { method: "DELETE" }); S.bet = S.bet.filter(b => b.id !== x.dataset.betdel); });
+  if ((x = g("data-betrole"))) return guard(async () => { const b = S.bet.find(y => y.id === x.dataset.betrole); const r = b.rolle === "M" ? "I" : "M"; await api("thema_beteiligte?id=eq." + b.id, { method: "PATCH", body: JSON.stringify({ rolle: r }) }); b.rolle = r; });
+  if ((x = g("data-vladd"))) return guard(async () => { const tx = $("#vl-t").value.trim(); if (!tx) return toast("Bitte einen Text eingeben.", true); await addVerlauf(sel, "Manuell", tx, $("#vl-d").value || iso(TODAY)); });
+  if ((x = g("data-todoadd"))) return guard(async () => {
+    const tx = $("#td-t").value.trim(); if (!tx) return toast("Bitte einen Text eingeben.", true);
+    const m = await api("projekt_todos?select=pos&projekt_id=eq." + encodeURIComponent(t.projekt_id) + "&order=pos.desc&limit=1");
+    const pos = (m && m[0] ? m[0].pos : 0) + 1;
+    const r = await api("projekt_todos", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ id: uid("todo"), projekt_id: t.projekt_id, text: tx, verantwortlich: t.kuemmerer || null, termin: null, status: "offen", prio: false, anhaenge: [], pos, thema_id: sel }) });
+    S.todos.push(r[0]); await addVerlauf(sel, "Änderung", "ToDo angelegt: " + tx);
+  });
+  if ((x = g("data-rm-term"))) return guard(async () => { const r = S.rm.find(y => y.id === x.dataset.rmTerm); await patchThema(r.thema_id, { naechster_termin: r.neuer_termin }, "Termin übernommen auf " + fmt(r.neuer_termin) + " (Vorschlag von " + (r.zugang_name || "Extern") + ")"); await markRm(r); });
+  if ((x = g("data-rm-ok"))) return guard(async () => { await markRm(S.rm.find(y => y.id === x.dataset.rmOk)); });
+  if ((x = g("data-rm-done"))) { const r = S.rm.find(y => y.id === x.dataset.rmDone); sel = r.thema_id; return doneDialog(r.thema_id, r.id); }
+  if ((x = g("data-znew"))) return guard(async () => {
+    const n = $("#zn-n").value.trim(); if (!n) return toast("Bitte einen Namen eingeben.", true);
+    await ensureSession(); const r = await rpc("thema_zugang_neu", { p_name: n, p_firma: $("#zn-f").value.trim() }); await loadZug(); linkDialog(n, r.token);
+  });
+  if ((x = g("data-ztok"))) return guard(async () => { await ensureSession(); const z = zugaenge.find(y => y.id === x.dataset.ztok); const tok = await rpc("thema_zugang_token_neu", { p_id: z.id }); await loadZug(); linkDialog(z.name, tok); });
+  if ((x = g("data-zakt"))) return guard(async () => { const [id, v] = x.dataset.zakt.split(":"); await api("thema_zugang?id=eq." + id, { method: "PATCH", body: JSON.stringify({ aktiv: v === "1" }) }); await loadZug(); });
+  if ((x = g("data-zlogout"))) { session = null; zugaenge = null; try { sessionStorage.removeItem("themen-session"); } catch (er) { } return render(); }
+});
+async function markRm(r) { await api("thema_rueckmeldung?id=eq." + r.id, { method: "PATCH", body: JSON.stringify({ bearbeitet: true }) }); r.bearbeitet = true; }
+async function shiftTermin(id, n) {
+  const t = T(id); const base = t.naechster_termin && pd(t.naechster_termin) >= TODAY ? t.naechster_termin : iso(TODAY);
+  const d = addDays(base, n); return guard(() => patchThema(id, { naechster_termin: d }, "Termin verschoben auf " + fmt(d)));
+}
+async function setKuemmerer(id, v) {
+  const t = T(id); const fi = firmaOf(v) || (!t.kuemmerer && t.kuemmerer_firma && !/^(alle)$/i.test(t.kuemmerer_firma) ? t.kuemmerer_firma : null);
+  return guard(() => patchThema(id, { kuemmerer: v || null, kuemmerer_firma: v ? fi : t.kuemmerer_firma }, v ? "Kümmerer: " + v : "Kümmerer entfernt"));
+}
+async function modalAct(x) {
+  const a = x.dataset.m;
+  if (a === "close") return closeModal();
+  if (a === "copy") { const l = $("#m-link").textContent; try { await navigator.clipboard.writeText(l); toast("Link kopiert."); } catch (e) { const r = document.createRange(); r.selectNode($("#m-link")); getSelection().removeAllRanges(); getSelection().addRange(r); toast("Bitte mit Strg+C kopieren."); } return; }
+  if (a === "pknewok") {
+    const ti = $("#m-t").value.trim(); if (!ti) return toast("Bitte einen Titel eingeben.", true);
+    const f = $("#m-f").value, p = $("#m-p").value, pid = x.dataset.pp, rid = x.dataset.pr; closeModal();
+    const pt = allPoints().find(y => y.pid === pid && y.row._rid === rid);
+    return guard(async () => {
+      const pos = Math.max(0, ...S.themen.map(t => t.pos)) + 1;
+      const r = await api("themen", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ titel: ti, handlungsfeld: f, prio: p, projekt_id: PROJ, ordner_id: ORDNER, quelle: "Protokoll", worum: pt ? shortTxt(pt.row.inhalt, 600) || null : null, pos }) });
+      S.themen.push(r[0]); sel = r[0].id;
+      await addVerlauf(sel, "Änderung", "Thema aus Protokollpunkt angelegt");
+      await assignPoint(pid, rid, sel); tab = "akte"; setTab("akte");
+    });
+  }
+  if (a === "newok") {
+    const ti = $("#m-t").value.trim(); if (!ti) return toast("Bitte einen Titel eingeben.", true);
+    const f = $("#m-f").value, p = $("#m-p").value; closeModal();
+    return guard(async () => { const pos = Math.max(0, ...S.themen.map(t => t.pos)) + 1; const r = await api("themen", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ titel: ti, handlungsfeld: f, prio: p, projekt_id: PROJ, ordner_id: ORDNER, quelle: "Manuell", pos }) }); S.themen.push(r[0]); sel = r[0].id; await addVerlauf(sel, "Änderung", "Thema angelegt"); tab = "akte"; setTab("akte"); });
+  }
+  if (a === "doneok") { const id = x.dataset.id, rm = x.dataset.rm; closeModal(); return guard(() => doneOk(id, rm)); }
+}
+document.addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset && el.dataset.pkset) { const r = el.closest("[data-pp]"); return guard(() => assignPoint(r.dataset.pp, r.dataset.pr, el.value || null)); }
+  if (el.dataset && el.dataset.pkadd) { if (!el.value) return; const [pid, rid] = el.value.split("|"); return guard(() => assignPoint(pid, rid, sel)); }
+  if (el.id === "akte-sel") { sel = el.value; editNext = false; return render(); }
+  const t = T(sel);
+  if (el.dataset && el.dataset.f && t) {
+    const f = el.dataset.f; let v = el.value.trim();
+    if (f === "titel") { if (!v) { el.value = t.titel; return; } return guard(() => patchThema(sel, { titel: v })); }
+    if (f === "liegenschaften") return guard(() => patchThema(sel, { liegenschaften: v.split(",").map(s => s.trim()).filter(Boolean) }));
+    if (f === "kuemmerer") return setKuemmerer(sel, v);
+    if (f === "wiedervorlage") return guard(() => patchThema(sel, { wiedervorlage: v || null }, v ? "Wiedervorlage " + fmt(v) : null));
+    return guard(() => patchThema(sel, { [f]: v || null }));
+  }
+  const tr = el.closest && el.closest("tr[data-ap]");
+  if (tr && el.dataset.apf) {
+    const id = tr.dataset.ap, f = el.dataset.apf; let v = el.value.trim(); const body = {};
+    if (f === "budget") { v = v.replace(/[€\s]/g, ""); if (v.includes(",")) v = v.replace(/\./g, "").replace(",", "."); else v = v.replace(/\.(?=\d{3}\b)/g, ""); const n = parseFloat(v); body.budget = v === "" || isNaN(n) ? null : n; }
+    else if (f === "inhalt") body.inhalt = v; else body[f] = v || null;
+    return guard(async () => { const r = await api("thema_ap?id=eq." + id, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body) }); const a = S.ap.find(y => y.id === id); if (r && r[0]) Object.assign(a, r[0]); const th = T(a.thema_id); if (th) th.letzte_bewegung = new Date().toISOString(); });
+  }
+  if (el.dataset && el.dataset.todo) return guard(async () => { const st = el.checked ? "erledigt" : "offen"; await api("projekt_todos?id=eq." + el.dataset.todo, { method: "PATCH", body: JSON.stringify({ status: st }) }); const x = S.todos.find(y => y.id === el.dataset.todo); x.status = st; x.updated_at = new Date().toISOString(); });
+});
+document.addEventListener("submit", async e => {
+  if (e.target.id !== "zug-login") return;
+  e.preventDefault(); const er = $("#zl-err"); er.textContent = "";
+  try { await login($("#zl-e").value.trim(), $("#zl-p").value); zugaenge = null; render(); } catch (x) { er.textContent = x.message; }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); if (e.key === "Enter" && e.target.id && /^m-[stwd]$/.test(e.target.id)) { const b = $("#modal [data-m]:not([data-m=close])"); if (b) b.click(); } });
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+
+// ---------- Start ----------
+function editing() {
+  const a = document.activeElement;
+  return $("#modal").classList.contains("on") || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.closest(".panel"));
+}
+(async function init() {
+  try { const s = JSON.parse(sessionStorage.getItem("themen-session") || "null"); if (s && s.expires_at > Date.now() / 1000) session = s; } catch (e) { }
+  const h = location.hash.match(/thema=([0-9a-f-]{36})/);
+  await loadAll();
+  if (h && T(h[1])) { sel = h[1]; tab = "akte"; }
+  setTab(tab);
+  window.addEventListener("hashchange", () => { const m = location.hash.match(/thema=([0-9a-f-]{36})/); if (m && T(m[1])) { sel = m[1]; editNext = false; setTab("akte"); } });
+  setInterval(async () => { if (document.hidden || editing()) return; if (await loadAll(true)) render(); }, 45000);
+})();
+</script>
+</body>
+</html>
